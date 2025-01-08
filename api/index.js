@@ -5,8 +5,8 @@ import { v4 as uuidv4 } from "uuid"
 import { startStandaloneServer } from "@apollo/server/standalone"
 import bcrypt from "bcrypt"
 import mongoose from "mongoose"
-import Repository from "./model/Repository.js"
-import User from "./model/User.js"
+import Repository from "../model/Repository.js"
+import User from "../model/User.js"
 
 const MONGODB_URI = process.env.MONGODB_URI
 mongoose
