@@ -1,12 +1,19 @@
 import { ApolloServer } from "@apollo/server"
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer"
 import jwt from "jsonwebtoken"
 import { GraphQLError } from "graphql"
 import { v4 as uuidv4 } from "uuid"
-import { startStandaloneServer } from "@apollo/server/standalone"
 import bcrypt from "bcrypt"
+import cors from "cors"
+import express from "express"
 import mongoose from "mongoose"
 import Repository from "../model/Repository.js"
 import User from "../model/User.js"
+import http from "http"
+const app = express()
+app.use(cors())
+app.use(express.json())
+const httpServer = http.createServer(app)
 
 const MONGODB_URI = process.env.MONGODB_URI
 mongoose
@@ -128,14 +135,14 @@ const resolvers = {
     },
   },
 }
-
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-})
-
-const { url } = await startStandaloneServer(server, {
-  listen: { port: 4000 },
-})
-
-console.log(`Server ready at ${url}`)
+const startApolloServer = async (app, httpServer) => {
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  })
+  await server.start()
+  server.app
+}
+startApolloServer(app, httpServer)
+export default httpServer
