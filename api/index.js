@@ -1,5 +1,6 @@
 import { ApolloServer } from "@apollo/server"
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer"
+import { expressMiddleware } from "@apollo/server/express4"
 import jwt from "jsonwebtoken"
 import { GraphQLError } from "graphql"
 import { v4 as uuidv4 } from "uuid"
@@ -135,14 +136,18 @@ const resolvers = {
     },
   },
 }
-const startApolloServer = async (app, httpServer) => {
-  const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-  })
-  await server.start()
-  server.app
-}
-startApolloServer(app, httpServer)
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+})
+
+await server.start()
+
+app.use("/graphql", expressMiddleware(server))
+
+httpServer.listen(4000, () => {
+  console.log("Server ready at ")
+})
 export default httpServer
